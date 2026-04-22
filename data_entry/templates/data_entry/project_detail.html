@@ -1,0 +1,88 @@
+{% extends 'data_entry/base.html' %}
+{% block title %}{{ project.name }} - ProManage{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <a class="link-back" href="{% url 'data_entry:projects' %}">? Kembali ke daftar proyek</a>
+
+    <div class="project-header card">
+      <div>
+        <h1 class="page-title">{{ project.name }}</h1>
+        <p>{{ project.description }}</p>
+        <ul class="meta-list">
+          <li>Tempat: {{ project.location }}</li>
+          <li>Tanggal: {{ project.start_date }} - {{ project.end_date }}</li>
+          <li>Pelaksana: {{ project.executor }}</li>
+          <li>Supervisor: {{ project.supervisor }}</li>
+        </ul>
+      </div>
+      <div>
+        {% if project.is_closed %}
+          <span class="lock-pill">Proyek Ditutup</span>
+        {% else %}
+          <form method="post" action="{% url 'data_entry:close_project' project.id %}">
+            {% csrf_token %}
+            <button class="btn btn-primary" type="submit">Tutup Proyek</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="tabs">
+      <a href="?category=engineering" class="{% if active_category == 'engineering' %}active{% endif %}">Intelligence Engineering</a>
+      <a href="?category=creation" class="{% if active_category == 'creation' %}active{% endif %}">Intelligence Creation</a>
+      <a href="?category=implementation" class="{% if active_category == 'implementation' %}active{% endif %}">Implementation</a>
+    </div>
+
+    <div class="toolbar">
+      <h2 class="section-title">Daftar Pekerjaan</h2>
+      <form method="get" class="search-inline">
+        <input type="hidden" name="category" value="{{ active_category }}">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cari pekerjaan...">
+        <button class="btn btn-outline" type="submit">Cari</button>
+      </form>
+    </div>
+
+    <div class="two-col-layout">
+      <div>
+        {% for work in works %}
+          <article class="card work-card">
+            <div class="card-top">
+              <h3><a href="{% url 'data_entry:work_detail' project.id work.id %}">{{ work.name }}</a></h3>
+              {% if not project.is_closed %}
+                <form method="post" action="{% url 'data_entry:delete_work' project.id work.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-danger" type="submit">Hapus</button>
+                </form>
+              {% endif %}
+            </div>
+            <p>{{ work.description }}</p>
+            <ul class="meta-list compact">
+              <li>Tempat: {{ work.location }}</li>
+              <li>Tanggal: {{ work.start_date }} - {{ work.end_date }}</li>
+              <li>Pelaksana: {{ work.executor }}</li>
+              <li>Supervisor: {{ work.supervisor }}</li>
+            </ul>
+            <a class="link-red" href="{% url 'data_entry:work_detail' project.id work.id %}">Lihat {{ work.activities.count }} aktivitas ?</a>
+          </article>
+        {% empty %}
+          <p class="muted">Belum ada pekerjaan untuk kategori ini.</p>
+        {% endfor %}
+      </div>
+
+      <aside class="card sticky-card">
+        <h2>Tambah Pekerjaan</h2>
+        {% if project.is_closed %}
+          <p class="muted">Proyek sudah ditutup.</p>
+        {% else %}
+          <form method="post" class="form-stack">
+            {% csrf_token %}
+            {{ work_form.as_p }}
+            <button class="btn btn-primary" type="submit">Simpan Pekerjaan</button>
+          </form>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

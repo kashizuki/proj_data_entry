@@ -1,0 +1,98 @@
+{% extends 'data_entry/base.html' %}
+{% block title %}{{ work.name }} - ProManage{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <a class="link-back" href="{% url 'data_entry:project_detail' project.id %}">? Kembali ke detail proyek</a>
+
+    <div class="project-header card">
+      <div>
+        <h1 class="page-title">{{ work.name }}</h1>
+        <p>{{ work.description }}</p>
+        <ul class="meta-list compact">
+          <li>Kategori: {{ work.get_category_display }}</li>
+          <li>Tempat: {{ work.location }}</li>
+          <li>Tanggal: {{ work.start_date }} - {{ work.end_date }}</li>
+          <li>Pelaksana: {{ work.executor }}</li>
+          <li>Supervisor: {{ work.supervisor }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <h2 class="section-title">Daftar Aktivitas</h2>
+      <form method="get" class="search-inline">
+        <input type="text" name="q" value="{{ q }}" placeholder="Cari aktivitas...">
+        <button class="btn btn-outline" type="submit">Cari</button>
+      </form>
+    </div>
+
+    <div class="two-col-layout">
+      <div>
+        {% for activity in activities %}
+          <article class="card activity-card {% if activity.done %}done{% endif %}">
+            <div class="card-top">
+              <h3>{{ activity.name }}</h3>
+              <div class="actions-inline">
+                {% if not project.is_closed %}
+                  <form method="post" action="{% url 'data_entry:toggle_activity' project.id work.id activity.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline" type="submit">{% if activity.done %}Batal Done{% else %}Mark as Done{% endif %}</button>
+                  </form>
+                  <form method="post" action="{% url 'data_entry:delete_activity' project.id work.id activity.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Hapus</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+            <p><strong>Waktu:</strong> {{ activity.execution_time }} | <strong>Pelaksana:</strong> {{ activity.executor }}</p>
+
+            <form method="post" action="{% url 'data_entry:update_evaluation' project.id work.id activity.id %}" class="form-stack mini-form">
+              {% csrf_token %}
+              <label>Evaluasi
+                <textarea name="evaluation" rows="2">{{ activity.evaluation }}</textarea>
+              </label>
+              <label>Rencana Tindak Lanjut
+                <textarea name="additional_plan" rows="2">{{ activity.additional_plan }}</textarea>
+              </label>
+              {% if not project.is_closed %}
+                <button class="btn btn-outline" type="submit">Simpan Evaluasi</button>
+              {% endif %}
+            </form>
+
+            <form method="post" enctype="multipart/form-data" action="{% url 'data_entry:upload_activity_photos' project.id work.id activity.id %}" class="upload-row">
+              {% csrf_token %}
+              <input type="file" name="images" multiple accept="image/*">
+              {% if not project.is_closed %}<button class="btn btn-outline" type="submit">Upload Foto</button>{% endif %}
+            </form>
+
+            {% if activity.photos.exists %}
+              <div class="photo-grid">
+                {% for photo in activity.photos.all %}
+                  <img src="{{ photo.image.url }}" alt="Dokumentasi aktivitas">
+                {% endfor %}
+              </div>
+            {% endif %}
+          </article>
+        {% empty %}
+          <p class="muted">Belum ada aktivitas.</p>
+        {% endfor %}
+      </div>
+
+      <aside class="card sticky-card">
+        <h2>Tambah Aktivitas</h2>
+        {% if project.is_closed %}
+          <p class="muted">Proyek ditutup, tidak bisa menambah aktivitas.</p>
+        {% else %}
+          <form method="post" class="form-stack">
+            {% csrf_token %}
+            {{ activity_form.as_p }}
+            <button class="btn btn-primary" type="submit">Simpan Aktivitas</button>
+          </form>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

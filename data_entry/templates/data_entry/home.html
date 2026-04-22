@@ -1,0 +1,57 @@
+{% extends 'data_entry/base.html' %}
+{% block title %}Beranda - ProManage{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-white">
+  <section class="px-4 py-10 sm:px-6 md:px-12 lg:px-20 md:py-16">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div class="text-center md:text-left">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
+            Manajemen Proyek
+            <span class="block text-red-800 mt-1 md:mt-2">Mahasiswa</span>
+          </h2>
+          <p class="text-base sm:text-lg text-gray-600 mb-6 md:mb-8 max-w-lg mx-auto md:mx-0">
+            Platform kolaborasi yang memudahkan mahasiswa dalam mengelola, merencanakan, dan memantau setiap tahapan proyek dengan sistematis dan terorganisir.
+          </p>
+          <a href="{% if user.is_authenticated %}{% url 'data_entry:projects' %}{% else %}{% url 'data_entry:login' %}{% endif %}" class="inline-flex items-center gap-2 bg-red-800 hover:bg-red-900 text-white px-6 py-3 sm:px-8 rounded-lg font-medium transition-colors">
+            Mulai Sekarang
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+        <div class="relative mt-6 md:mt-0">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
+            <img src="https://images.unsplash.com/photo-1758270705317-3ef6142d306f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080" alt="Kolaborasi tim mahasiswa" class="w-full h-full object-cover">
+          </div>
+          <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-red-800/10 rounded-full blur-2xl"></div>
+          <div class="absolute -top-4 -right-4 w-28 h-28 bg-red-800/10 rounded-full blur-2xl"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 py-14 sm:px-6 md:px-12 lg:px-20 md:py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-10 md:mb-16">
+        <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">Kemampuan Aplikasi</h3>
+        <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">Lima fitur utama untuk membantu mahasiswa mengelola proyek dari awal hingga selesai.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div class="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100"><div class="w-11 h-11 md:w-12 md:h-12 bg-red-800 rounded-lg flex items-center justify-center mb-4"><i data-lucide="folder-kanban" class="w-5 h-5 text-white"></i></div><h4 class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">Profil Proyek</h4><p class="text-sm md:text-base text-gray-600 leading-relaxed">Kelola informasi lengkap proyek.</p></div>
+        <div class="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100"><div class="w-11 h-11 md:w-12 md:h-12 bg-red-800 rounded-lg flex items-center justify-center mb-4"><i data-lucide="check-square" class="w-5 h-5 text-white"></i></div><h4 class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">Pekerjaan Proyek</h4><p class="text-sm md:text-base text-gray-600 leading-relaxed">Atur dan monitor tiap pekerjaan.</p></div>
+        <div class="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100"><div class="w-11 h-11 md:w-12 md:h-12 bg-red-800 rounded-lg flex items-center justify-center mb-4"><i data-lucide="calendar" class="w-5 h-5 text-white"></i></div><h4 class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">Perencanaan Aktivitas</h4><p class="text-sm md:text-base text-gray-600 leading-relaxed">Rencanakan setiap aktivitas secara rinci.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 py-12 sm:px-6 md:px-12 lg:px-20 bg-red-800">
+    <div class="max-w-3xl mx-auto text-center">
+      <h3 class="text-2xl sm:text-3xl font-bold text-white mb-3">Siap Mengelola Proyek Anda?</h3>
+      <p class="text-red-200 text-base mb-6">Bergabunglah dan mulai kelola proyek mahasiswa Anda secara lebih terstruktur.</p>
+      <a href="{% if user.is_authenticated %}{% url 'data_entry:projects' %}{% else %}{% url 'data_entry:register' %}{% endif %}" class="inline-flex items-center gap-2 bg-white text-red-800 hover:bg-red-50 px-6 py-3 rounded-lg font-medium transition-colors">
+        Mulai Sekarang
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,303 @@
+{% extends 'data_entry/base.html' %}
+{% block title %}Proyek - ProManage{% endblock %}
+{% block content %}
+<section class="relative h-72 md:h-96 overflow-hidden">
+  <img
+    src="https://images.unsplash.com/photo-1758270705317-3ef6142d306f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1400"
+    alt="Tim kerja mahasiswa"
+    class="w-full h-full object-cover"
+  >
+  <div class="hero-overlay"></div>
+  <div class="absolute inset-0 flex items-center justify-center px-4">
+    <div class="text-center text-white">
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-3">Manajemen Proyek</h1>
+      <p class="text-base md:text-xl text-gray-200">Kelola Proyek Mahasiswa dengan Efisien</p>
+    </div>
+  </div>
+</section>
+
+<section class="px-4 py-10 sm:px-6 md:px-12 lg:px-20 bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900 mb-1">Daftar Proyek</h2>
+        <p class="text-gray-600">Kelola dan pantau semua proyek Anda</p>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <form method="get" class="relative flex-1 sm:w-64">
+          <input type="text" name="q" value="{{ q }}" placeholder="Cari proyek..." class="input-field pl-10" />
+          <span class="input-icon">?</span>
+        </form>
+        <button id="openWizard" class="btn btn-primary">+ Buat Proyek</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for project in projects %}
+        <article class="project-box">
+          <a href="{% url 'data_entry:project_detail' project.id %}" class="block">
+            <div class="flex items-start justify-between mb-4 pr-8 gap-3">
+              <div class="project-icon">??</div>
+              <span class="status-pill">{{ project.status }}</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 hover:text-red-800 transition-colors">{{ project.name }}</h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ project.description }}</p>
+            <div class="space-y-2 text-sm text-gray-500">
+              <div>?? {{ project.location }}</div>
+              <div>?? {{ project.start_date }} - {{ project.end_date }}</div>
+              <div>?? {{ project.executor }}</div>
+            </div>
+          </a>
+          <form method="post" action="{% url 'data_entry:delete_project' project.id %}" class="absolute top-3 right-3" onsubmit="return confirm('Apakah Anda yakin ingin menghapus proyek ini?')">
+            {% csrf_token %}
+            <button class="delete-btn" type="submit">??</button>
+          </form>
+        </article>
+      {% empty %}
+        <div class="col-span-full text-center py-16 text-gray-500">Belum ada proyek. Mulai dengan membuat proyek baru.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div id="wizardModal" class="wizard-backdrop hidden">
+  <div class="wizard-shell">
+    <div class="wizard-header">
+      <div class="wizard-steps">
+        <div class="step-item active" data-step-dot="1"><span>1</span><small>Data Proyek</small></div>
+        <div class="step-line" data-step-line="1"></div>
+        <div class="step-item" data-step-dot="2"><span>2</span><small>Tambah Pekerjaan</small></div>
+        <div class="step-line" data-step-line="2"></div>
+        <div class="step-item" data-step-dot="3"><span>3</span><small>Tambah Aktivitas</small></div>
+      </div>
+      <button id="closeWizard" class="close-x">×</button>
+    </div>
+
+    <div class="wizard-body">
+      <section class="wizard-step" data-step="1">
+        <h3 class="wizard-title">Data Proyek</h3>
+        <div class="form-grid">
+          <label>Nama Proyek *<input id="p_name" class="input-field"></label>
+          <label class="full">Deskripsi *<textarea id="p_desc" class="input-field" rows="3"></textarea></label>
+          <label>Tempat *<input id="p_loc" class="input-field"></label>
+          <label>Tanggal Mulai *<input id="p_start" type="date" class="input-field"></label>
+          <label>Tanggal Selesai *<input id="p_end" type="date" class="input-field"></label>
+          <label>Pelaksana *<input id="p_exec" class="input-field"></label>
+          <label>Supervisor *<input id="p_sup" class="input-field"></label>
+        </div>
+      </section>
+
+      <section class="wizard-step hidden" data-step="2">
+        <h3 class="wizard-title">Tambah Pekerjaan</h3>
+        <div id="workList" class="stack-list"></div>
+        <div class="form-grid">
+          <label>Nama Pekerjaan *<input id="w_name" class="input-field"></label>
+          <label class="full">Deskripsi *<textarea id="w_desc" class="input-field" rows="2"></textarea></label>
+          <label>Tempat *<input id="w_loc" class="input-field"></label>
+          <label>Kategori *
+            <select id="w_cat" class="input-field">
+              <option value="engineering">Intelligence Engineering</option>
+              <option value="creation">Intelligence Creation</option>
+              <option value="implementation">Implementation</option>
+            </select>
+          </label>
+          <label>Tanggal Mulai *<input id="w_start" type="date" class="input-field"></label>
+          <label>Tanggal Selesai *<input id="w_end" type="date" class="input-field"></label>
+          <label>Pelaksana *<input id="w_exec" class="input-field"></label>
+          <label>Supervisor *<input id="w_sup" class="input-field"></label>
+        </div>
+        <button id="addWorkBtn" class="btn btn-secondary" type="button">+ Tambah Pekerjaan</button>
+      </section>
+
+      <section class="wizard-step hidden" data-step="3">
+        <h3 class="wizard-title">Tambah Aktivitas</h3>
+        <div class="form-grid">
+          <label>Pilih Pekerjaan *
+            <select id="a_work" class="input-field"></select>
+          </label>
+          <label>Nama Aktivitas *<input id="a_name" class="input-field"></label>
+          <label>Waktu Pelaksanaan *<input id="a_time" class="input-field" placeholder="Contoh: 2 jam"></label>
+          <label>Pelaksana *<input id="a_exec" class="input-field"></label>
+        </div>
+        <button id="addActivityBtn" class="btn btn-secondary" type="button">+ Tambah Aktivitas</button>
+        <div id="activityList" class="stack-list mt"></div>
+      </section>
+    </div>
+
+    <div class="wizard-footer">
+      <button id="prevStep" class="btn btn-outline" type="button">Kembali</button>
+      <button id="nextStep" class="btn btn-primary" type="button">Selanjutnya</button>
+      <form id="wizardSubmitForm" method="post" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" name="wizard_payload" id="wizardPayload">
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const modal = document.getElementById('wizardModal');
+  const openBtn = document.getElementById('openWizard');
+  const closeBtn = document.getElementById('closeWizard');
+  const prevBtn = document.getElementById('prevStep');
+  const nextBtn = document.getElementById('nextStep');
+  const steps = [...document.querySelectorAll('.wizard-step')];
+  const dots = [...document.querySelectorAll('[data-step-dot]')];
+  const lines = [...document.querySelectorAll('[data-step-line]')];
+
+  let currentStep = 1;
+  const works = [];
+
+  const project = {
+    name: '', description: '', location: '', startDate: '', endDate: '', executor: '', supervisor: ''
+  };
+
+  const required = (v) => String(v || '').trim().length > 0;
+
+  const resetWizard = () => {
+    currentStep = 1;
+    works.length = 0;
+    ['p_name','p_desc','p_loc','p_start','p_end','p_exec','p_sup','w_name','w_desc','w_loc','w_start','w_end','w_exec','w_sup','a_name','a_time','a_exec'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('w_cat').value = 'engineering';
+    renderWorks();
+    renderWorkSelect();
+    renderActivities();
+    syncStep();
+  };
+
+  const syncStep = () => {
+    steps.forEach((s, i) => s.classList.toggle('hidden', i !== currentStep - 1));
+    dots.forEach((d, i) => d.classList.toggle('active', i < currentStep));
+    lines.forEach((l, i) => l.classList.toggle('active', i < currentStep - 1));
+    prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+    nextBtn.textContent = currentStep === 3 ? 'Buat Proyek' : 'Selanjutnya';
+  };
+
+  const renderWorks = () => {
+    const el = document.getElementById('workList');
+    el.innerHTML = works.map((w, idx) => `<div class="list-chip"><span><b>${w.name}</b> (${w.category})</span><button type="button" data-del-work="${idx}">×</button></div>`).join('');
+    el.querySelectorAll('[data-del-work]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        works.splice(Number(btn.getAttribute('data-del-work')), 1);
+        renderWorks();
+        renderWorkSelect();
+        renderActivities();
+      });
+    });
+  };
+
+  const renderWorkSelect = () => {
+    const s = document.getElementById('a_work');
+    s.innerHTML = works.map((w, idx) => `<option value="${idx}">${w.name}</option>`).join('');
+  };
+
+  const renderActivities = () => {
+    const idx = Number(document.getElementById('a_work').value || 0);
+    const w = works[idx];
+    const box = document.getElementById('activityList');
+    if (!w || !w.activities.length) {
+      box.innerHTML = '<p class="muted">Belum ada aktivitas.</p>';
+      return;
+    }
+    box.innerHTML = w.activities.map(a => `<div class="list-chip"><span>${a.name} - ${a.executor} (${a.executionTime})</span></div>`).join('');
+  };
+
+  document.getElementById('addWorkBtn').addEventListener('click', () => {
+    const work = {
+      name: document.getElementById('w_name').value,
+      description: document.getElementById('w_desc').value,
+      location: document.getElementById('w_loc').value,
+      startDate: document.getElementById('w_start').value,
+      endDate: document.getElementById('w_end').value,
+      executor: document.getElementById('w_exec').value,
+      supervisor: document.getElementById('w_sup').value,
+      category: document.getElementById('w_cat').value,
+      activities: []
+    };
+    if (!Object.values(work).every(v => Array.isArray(v) || required(v))) return alert('Lengkapi data pekerjaan.');
+    works.push(work);
+    ['w_name','w_desc','w_loc','w_start','w_end','w_exec','w_sup'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('w_cat').value = 'engineering';
+    renderWorks();
+    renderWorkSelect();
+    renderActivities();
+  });
+
+  document.getElementById('addActivityBtn').addEventListener('click', () => {
+    const idx = Number(document.getElementById('a_work').value || 0);
+    const w = works[idx];
+    if (!w) return alert('Tambahkan pekerjaan dulu.');
+    const a = {
+      name: document.getElementById('a_name').value,
+      executionTime: document.getElementById('a_time').value,
+      executor: document.getElementById('a_exec').value
+    };
+    if (!Object.values(a).every(required)) return alert('Lengkapi data aktivitas.');
+    w.activities.push(a);
+    ['a_name','a_time','a_exec'].forEach(id => document.getElementById(id).value = '');
+    renderActivities();
+  });
+
+  document.getElementById('a_work').addEventListener('change', renderActivities);
+
+  const validateStep1 = () => {
+    project.name = document.getElementById('p_name').value;
+    project.description = document.getElementById('p_desc').value;
+    project.location = document.getElementById('p_loc').value;
+    project.startDate = document.getElementById('p_start').value;
+    project.endDate = document.getElementById('p_end').value;
+    project.executor = document.getElementById('p_exec').value;
+    project.supervisor = document.getElementById('p_sup').value;
+    return Object.values(project).every(required);
+  };
+
+  prevBtn.addEventListener('click', () => {
+    currentStep = Math.max(1, currentStep - 1);
+    syncStep();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentStep === 1) {
+      if (!validateStep1()) return alert('Lengkapi data proyek terlebih dahulu.');
+      currentStep = 2;
+      return syncStep();
+    }
+    if (currentStep === 2) {
+      if (!works.length) return alert('Minimal 1 pekerjaan.');
+      currentStep = 3;
+      renderWorkSelect();
+      renderActivities();
+      return syncStep();
+    }
+
+    if (works.some(w => !w.activities.length)) return alert('Setiap pekerjaan minimal 1 aktivitas.');
+    const payload = { project, works };
+    document.getElementById('wizardPayload').value = JSON.stringify(payload);
+    document.getElementById('wizardSubmitForm').submit();
+  });
+
+  openBtn.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+    document.body.classList.add('no-scroll');
+  });
+  closeBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    document.body.classList.remove('no-scroll');
+    resetWizard();
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      document.body.classList.remove('no-scroll');
+      resetWizard();
+    }
+  });
+
+  syncStep();
+})();
+</script>
+{% endblock %}
